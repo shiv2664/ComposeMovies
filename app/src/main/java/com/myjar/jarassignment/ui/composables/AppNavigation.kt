@@ -8,41 +8,40 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.paging.compose.LazyPagingItems
 import coil.compose.AsyncImage
-import com.myjar.jarassignment.data.model.ComputerItem
+import com.myjar.jarassignment.data.model.Search
 import com.myjar.jarassignment.ui.vm.JarViewModel
 
 @Composable
 fun AppNavigation(
-    modifier: Modifier = Modifier,
-    viewModel: JarViewModel,
-) {
+    modifier: Modifier = Modifier, ) {
     val navController = rememberNavController()
 
+    val viewModel = hiltViewModel<JarViewModel>()
+    val pagingItems= viewModel.getMoviesListing().collectAsLazyPagingItems()
     NavHost(modifier = modifier, navController = navController, startDestination = "item_list") {
         composable("item_list") {
             ItemListScreen(
-                viewModel = viewModel,
-                onNavigateToDetail = { itemId -> navController.navigate("item_detail/$itemId") }
-            )
+                pagingItems,
+                onNavigateToDetail = { itemId -> navController.navigate("item_detail/$itemId")})
         }
         composable("item_detail/{itemId}") { backStackEntry ->
             val itemId = backStackEntry.arguments?.getString("itemId")
@@ -53,31 +52,24 @@ fun AppNavigation(
 
 @Composable
 fun ItemListScreen(
-    viewModel: JarViewModel,
+    pagingItems: LazyPagingItems<Search>,
     onNavigateToDetail: (String) -> Unit
 ) {
+    LazyColumn{
+       items(pagingItems.itemCount) { index ->
+           val movieItem = pagingItems[index]
+               MovieCard(
+                   item = movieItem,
+                   onClick = { onNavigateToDetail(movieItem?.Title?:"")}
+               )
+       }
+   }
 
-    val items = viewModel.listStringData.collectAsState()
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        items(items.value) { item ->
-            ItemCard(
-                item = item,
-                onClick = { onNavigateToDetail(item.id) }
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-        }
-    }
 }
 
-//https://fastly.picsum.photos/id/18/536/354.jpg?hmac=FlV7gOOejOI5T5E4xPY1Orq37bUQ629f51vdh554n6g
-
 @Composable
-fun ItemCard(
-    item: ComputerItem,
+fun MovieCard(
+    item: Search?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -91,33 +83,27 @@ fun ItemCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             AsyncImage(
-                model = "https://fastly.picsum.photos/id/18/536/354.jpg?hmac=FlV7gOOejOI5T5E4xPY1Orq37bUQ629f51vdh554n6g",
+                model = item?.Poster,
                 contentDescription = "Product image",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp)
+                    .height(300.dp)
                     .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop)
+                contentScale = ContentScale.Fit)
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = item.name,
+                text = item?.Title?:"",
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
+                Text(text = item?.imdbID?:"", color =  Color.Black)
+                Text(text = item?.Year?:"", color = Color.Black)
 
-            item.data?.color?.let { color ->
-                Text(text = "Color: $color", color = Color.Black)
-            }
-
-            item.data?.price?.let { price ->
-                Text(text = "Price: '$'$price", color = Color.Black)
-            }
         }
     }
 }
-
 
 @Composable
 fun ItemDetailScreen(itemId: String?) {

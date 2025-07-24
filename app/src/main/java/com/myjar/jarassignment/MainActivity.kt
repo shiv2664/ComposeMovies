@@ -13,23 +13,19 @@ import androidx.compose.ui.Modifier
 import com.myjar.jarassignment.ui.vm.JarViewModel
 import com.myjar.jarassignment.ui.composables.AppNavigation
 import com.myjar.jarassignment.ui.theme.JarAssignmentTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    private val viewModel by viewModels<JarViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            LaunchedEffect(Unit) {
-                viewModel.fetchData()
-            }
             JarAssignmentTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     AppNavigation(
-                        modifier = Modifier.padding(innerPadding),
-                        viewModel = viewModel,
+                        modifier = Modifier.padding(innerPadding)
                     )
                 }
             }

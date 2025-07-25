@@ -25,8 +25,6 @@ class PagingSourceMovies(
             position = params.key ?: defaultIndex
         }
 
-
-        // Make the API call
         val response = try {
             apiInterface.getMoviesList("https://www.omdbapi.com/?apikey=7513b73b&s=$searchKey&page=$position").body()
         } catch (e: Exception) {

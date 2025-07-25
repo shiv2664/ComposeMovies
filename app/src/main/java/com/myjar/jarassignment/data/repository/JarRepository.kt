@@ -13,22 +13,22 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-/*interface JarRepository {
+interface JarRepository {
     suspend fun fetchResults(): Flow<List<ComputerItem>>
     fun getMoviesListing(query: String = ""): Flow<PagingData<Search>>
     suspend fun getMoviesDetails(key: String): MovieDetails?
-}*/
+}
 
-class JarRepository @Inject constructor(val apiInterface: MoviesApiInterface) {
-    suspend fun fetchResults(): Flow<List<ComputerItem>> {
+class JarRepositoryImpl @Inject constructor(val apiInterface: MoviesApiInterface): JarRepository {
+    override suspend fun fetchResults(): Flow<List<ComputerItem>> {
         TODO("Not yet implemented")
     }
 
-     fun getMoviesListing(query:String) = Pager(
+     override fun getMoviesListing(query:String) = Pager(
         config = PagingConfig(10, maxSize = 100, enablePlaceholders = true),
         pagingSourceFactory = { PagingSourceMovies(apiInterface,searchKey = query) }).flow
 
-     suspend fun getMoviesDetails(key:String):MovieDetails?{
+     override suspend fun getMoviesDetails(key:String):MovieDetails?{
         val url ="https://www.omdbapi.com/?apikey=7513b73b&t=$key"
         return apiInterface.getMoviesDetails(url).body()
     }

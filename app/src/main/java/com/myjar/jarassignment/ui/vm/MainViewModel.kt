@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class JarViewModel @Inject constructor(val repository: JarRepositoryImpl) : ViewModel() {
+class MainViewModel @Inject constructor(val repository: JarRepositoryImpl) : ViewModel() {
 
     private val _listStringData = MutableStateFlow<List<ComputerItem>>(emptyList())
     val listStringData: StateFlow<List<ComputerItem>>
@@ -26,9 +26,6 @@ class JarViewModel @Inject constructor(val repository: JarRepositoryImpl) : View
         return repository.getMoviesListing(searchKey).cachedIn(viewModelScope)
     }
 
-    suspend fun getDetails(title: String): MovieDetails? {
-        return repository.getMoviesDetails(title)
-    }
 
     fun fetchData() {
         viewModelScope.launch {

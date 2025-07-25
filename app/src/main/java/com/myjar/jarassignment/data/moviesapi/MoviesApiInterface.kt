@@ -12,6 +12,6 @@ interface MoviesApiInterface {
     suspend fun getMoviesList(@Url url:String):Response<MoviesListingModel?>
 
     @GET
-    suspend fun getMoviesDetails(@Url url:String):Response<MovieDetails?>
+    suspend fun getMoviesDetails(@Url url:String): Response<MovieDetails?>
 
 }

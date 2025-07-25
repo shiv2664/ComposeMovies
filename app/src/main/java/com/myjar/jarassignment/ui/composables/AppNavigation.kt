@@ -1,25 +1,19 @@
 package com.myjar.jarassignment.ui.composables
 
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.GradientDrawable
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.SnapPosition
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.runtime.*
-import coil.ImageLoader
-import coil.request.ImageRequest
-import coil.request.SuccessResult
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -30,25 +24,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.ColorUtils
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.LazyPagingItems
-import androidx.palette.graphics.Palette
 import coil.compose.AsyncImage
+import com.myjar.jarassignment.NetworkResult
 import com.myjar.jarassignment.data.model.Search
-import com.myjar.jarassignment.ui.vm.JarViewModel
+import com.myjar.jarassignment.ui.vm.DetailsViewModel
+import com.myjar.jarassignment.ui.vm.MainViewModel
 
 @Composable
 fun AppNavigation(
@@ -56,20 +50,21 @@ fun AppNavigation(
 ) {
     val navController = rememberNavController()
     var searchQuery by rememberSaveable { mutableStateOf("avengers") }
-    val viewModel = hiltViewModel<JarViewModel>()
+    val viewModel = hiltViewModel<MainViewModel>()
     val pagingItems = viewModel.getMoviesListing(searchKey = searchQuery).collectAsLazyPagingItems()
 
     NavHost(modifier = modifier, navController = navController, startDestination = "item_list") {
         composable("item_list") {
             ItemListScreen(
                 pagingItems,
-                onNavigateToDetail = { itemId -> navController.navigate("item_detail/$itemId") },
+                onNavigateToDetail = { title -> navController.navigate("item_detail/$title") },
                 onSearch = { newQuery -> searchQuery = newQuery },
-                initialSearch = searchQuery)
+                initialSearch = searchQuery
+            )
         }
-        composable("item_detail/{itemId}") { backStackEntry ->
-            val itemId = backStackEntry.arguments?.getString("itemId")
-            ItemDetailScreen(itemId = itemId)
+        composable("item_detail/{title}") { backStackEntry ->
+            val title = backStackEntry.arguments?.getString("title")
+            ItemDetailScreen(title = title)
         }
     }
 }
@@ -87,7 +82,7 @@ fun ItemListScreen(
     Column(modifier = Modifier.fillMaxSize()) {
 
         TextField(value = searchText,
-            onValueChange = { newValue->
+            onValueChange = { newValue ->
                 searchText = newValue
                 onSearch(newValue)
             }, modifier = Modifier
@@ -95,10 +90,11 @@ fun ItemListScreen(
                 .padding(8.dp),
             singleLine = true,
             placeholder = {
-                Text("Search...") }
+                Text("Search...")
+            }
         )
 
-        LazyVerticalStaggeredGrid(
+/*        LazyVerticalStaggeredGrid(
             columns = StaggeredGridCells.Adaptive(150.dp), // 2 columns, staggered effect
             modifier = Modifier.padding(8.dp),
             contentPadding = PaddingValues(8.dp)
@@ -111,9 +107,9 @@ fun ItemListScreen(
                     // Optionally, you can add a Modifier.padding here per card
                 )
             }
-        }
+        }*/
 
-        /*LazyColumn {
+        LazyColumn {
             items(pagingItems.itemCount) { index ->
                 val movieItem = pagingItems[index]
                 MovieCard(
@@ -121,7 +117,7 @@ fun ItemListScreen(
                     onClick = { onNavigateToDetail(movieItem?.Title ?: "") }
                 )
             }
-        }*/
+        }
     }
 
 }
@@ -203,10 +199,10 @@ fun MovieCard(
             Text(
                 text = item?.Title ?: "",
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = Color.Black
             )
-            Text(text = item?.imdbID ?: "", color = Color.White)
-            Text(text = item?.Year ?: "", color = Color.White)
+            Text(text = item?.imdbID ?: "", color = Color.Black)
+            Text(text = item?.Year ?: "", color = Color.Black)
         }
     }
 }
@@ -251,13 +247,58 @@ fun MovieCard(
 }*/
 
 @Composable
-fun ItemDetailScreen(itemId: String?) {
-    // Fetch the item details based on the itemId
-    // Here, you can fetch it from the ViewModel or repository
-    Text(
-        text = "Item Details for ID: $itemId",
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    )
+fun ItemDetailScreen(title: String?) {
+
+   /* Wrong method no sepration of concern or state management
+
+    val viewModel = hiltViewModel<DetailsViewModel>()
+    var result by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(title) {
+        result = when (val response = viewModel.getDetails(title.toString())) {
+            is NetworkResult.onSuccess -> response.data?.Title ?: "No data"
+            is NetworkResult.onError -> "Error: ${response.message ?: "Unknown error"}"
+            is NetworkResult.onLoading -> "Loading..."
+            else -> "Unknown state"
+        }
+
+    }*/
+
+    val viewModel = hiltViewModel<DetailsViewModel>()
+    var result by remember { mutableStateOf<String?>("") }
+    val detailState by viewModel.details.collectAsState()
+    LaunchedEffect(title) {
+        viewModel.getDetails(title.toString())
+    }
+
+    when (detailState) {
+        is NetworkResult.Loading -> {
+            result=detailState.message?:""
+        }
+
+        is NetworkResult.Success -> {
+            result=detailState.data?.Title?:""
+        }
+
+        is NetworkResult.Error -> {
+        }
+
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        if (result?.isNotEmpty()==true){
+                Text(
+                    text = "Item Details for ID: $result",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold
+                )
+
+            }
+    }
+
 }

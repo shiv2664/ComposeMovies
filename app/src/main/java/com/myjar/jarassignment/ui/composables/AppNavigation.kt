@@ -1,5 +1,8 @@
 package com.myjar.jarassignment.ui.composables
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Box
@@ -40,10 +43,15 @@ import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.LazyPagingItems
 import coil.compose.AsyncImage
 import com.myjar.jarassignment.NetworkResult
+import com.myjar.jarassignment.Utils.slideLeftEnter
+import com.myjar.jarassignment.Utils.slideLeftExit
+import com.myjar.jarassignment.Utils.slideRightEnter
+import com.myjar.jarassignment.Utils.slideRightExit
 import com.myjar.jarassignment.data.model.Search
 import com.myjar.jarassignment.ui.vm.DetailsViewModel
 import com.myjar.jarassignment.ui.vm.MainViewModel
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun AppNavigation(
     modifier: Modifier = Modifier,
@@ -54,7 +62,40 @@ fun AppNavigation(
     val pagingItems = viewModel.getMoviesListing(searchKey = searchQuery).collectAsLazyPagingItems()
 
     NavHost(modifier = modifier, navController = navController, startDestination = "item_list") {
-        composable("item_list") {
+        composable(
+            "item_list",
+            /*enterTransition = slideLeftEnter,
+            exitTransition = slideLeftExit,
+            popEnterTransition = slideRightEnter,
+            popExitTransition = slideRightExit*/
+
+
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(700)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(700)
+                )
+            },
+            popEnterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(700)
+                )
+            },
+            popExitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(700)
+                )
+            }
+        ) {
+
             ItemListScreen(
                 pagingItems,
                 onNavigateToDetail = { title -> navController.navigate("item_detail/$title") },
@@ -62,7 +103,38 @@ fun AppNavigation(
                 initialSearch = searchQuery
             )
         }
-        composable("item_detail/{title}") { backStackEntry ->
+        composable("item_detail/{title}",
+/*            enterTransition = slideLeftEnter,
+            exitTransition = slideLeftExit,
+            popEnterTransition = slideRightEnter,
+            popExitTransition = slideRightExit*/
+
+
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(700)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(700)
+                )
+            },
+            popEnterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(700)
+                )
+            },
+            popExitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(700)
+                )
+            }
+        ) { backStackEntry ->
             val title = backStackEntry.arguments?.getString("title")
             ItemDetailScreen(title = title)
         }
@@ -94,20 +166,20 @@ fun ItemListScreen(
             }
         )
 
-/*        LazyVerticalStaggeredGrid(
-            columns = StaggeredGridCells.Adaptive(150.dp), // 2 columns, staggered effect
-            modifier = Modifier.padding(8.dp),
-            contentPadding = PaddingValues(8.dp)
-        ) {
-            items(pagingItems.itemCount) { index ->
-                val movieItem = pagingItems[index]
-                MovieCard(
-                    item = movieItem,
-                    onClick = { onNavigateToDetail(movieItem?.Title ?: "") },
-                    // Optionally, you can add a Modifier.padding here per card
-                )
-            }
-        }*/
+        /*        LazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Adaptive(150.dp), // 2 columns, staggered effect
+                    modifier = Modifier.padding(8.dp),
+                    contentPadding = PaddingValues(8.dp)
+                ) {
+                    items(pagingItems.itemCount) { index ->
+                        val movieItem = pagingItems[index]
+                        MovieCard(
+                            item = movieItem,
+                            onClick = { onNavigateToDetail(movieItem?.Title ?: "") },
+                            // Optionally, you can add a Modifier.padding here per card
+                        )
+                    }
+                }*/
 
         LazyColumn {
             items(pagingItems.itemCount) { index ->
@@ -249,19 +321,19 @@ fun MovieCard(
 @Composable
 fun ItemDetailScreen(title: String?) {
 
-   /* Wrong method no sepration of concern or state management
+    /* Wrong method no sepration of concern or state management
 
-    val viewModel = hiltViewModel<DetailsViewModel>()
-    var result by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(title) {
-        result = when (val response = viewModel.getDetails(title.toString())) {
-            is NetworkResult.onSuccess -> response.data?.Title ?: "No data"
-            is NetworkResult.onError -> "Error: ${response.message ?: "Unknown error"}"
-            is NetworkResult.onLoading -> "Loading..."
-            else -> "Unknown state"
-        }
+     val viewModel = hiltViewModel<DetailsViewModel>()
+     var result by remember { mutableStateOf<String?>(null) }
+     LaunchedEffect(title) {
+         result = when (val response = viewModel.getDetails(title.toString())) {
+             is NetworkResult.onSuccess -> response.data?.Title ?: "No data"
+             is NetworkResult.onError -> "Error: ${response.message ?: "Unknown error"}"
+             is NetworkResult.onLoading -> "Loading..."
+             else -> "Unknown state"
+         }
 
-    }*/
+     }*/
 
     val viewModel = hiltViewModel<DetailsViewModel>()
     var result by remember { mutableStateOf<String?>("") }
@@ -272,11 +344,11 @@ fun ItemDetailScreen(title: String?) {
 
     when (detailState) {
         is NetworkResult.Loading -> {
-            result=detailState.message?:""
+            result = detailState.message ?: ""
         }
 
         is NetworkResult.Success -> {
-            result=detailState.data?.Title?:""
+            result = detailState.data?.Title ?: ""
         }
 
         is NetworkResult.Error -> {
@@ -288,17 +360,16 @@ fun ItemDetailScreen(title: String?) {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        if (result?.isNotEmpty()==true){
-                Text(
-                    text = "Item Details for ID: $result",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold
-                )
+        if (result?.isNotEmpty() == true) {
+            Text(
+                text = "Item Details for ID: $result",
+                modifier = Modifier
+                    .padding(16.dp),
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold
+            )
 
-            }
+        }
     }
 
 }

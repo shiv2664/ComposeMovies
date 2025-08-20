@@ -7,8 +7,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.myjar.jarassignment.ui.composables.AppNavigation
+import androidx.navigation.compose.rememberNavController
+import com.myjar.jarassignment.navigation.AppNavigation
 import com.myjar.jarassignment.ui.theme.JarAssignmentTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -20,12 +22,19 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             JarAssignmentTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    AppNavigation(
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                JarAssignmentApp()
             }
         }
+    }
+}
+
+@Composable
+fun JarAssignmentApp() {
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+    ) { innerPadding ->
+        AppNavigation(
+            modifier = Modifier.padding(innerPadding)
+        )
     }
 }

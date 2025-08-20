@@ -84,4 +84,8 @@ dependencies {
 
     implementation("androidx.palette:palette-ktx:1.0.0")
 
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.hilt.navigation.compose)
+
+
 }

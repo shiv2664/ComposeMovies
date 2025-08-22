@@ -30,11 +30,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun JarAssignmentApp() {
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-    ) { innerPadding ->
-        AppNavigation(
-            modifier = Modifier.padding(innerPadding)
-        )
-    }
+    AppNavigation(modifier = Modifier)
+
 }

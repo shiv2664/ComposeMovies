@@ -1,8 +1,10 @@
 package com.myjar.jarassignment.data.repository
 
+import android.content.SharedPreferences // Added import
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.google.gson.Gson // Added import
 import com.myjar.jarassignment.NetworkResult
 import com.myjar.jarassignment.data.PagingSourceMovies
 import com.myjar.jarassignment.data.model.ComputerItem
@@ -15,18 +17,38 @@ import javax.inject.Inject
 
 interface JarRepository {
     fun fetchResults(): Flow<List<ComputerItem>>
-    fun getMoviesListing(query: String = ""): Flow<PagingData<Search>>
+    fun getMoviesListing(
+        query: String = "",
+        sharedPreferences: SharedPreferences,
+        gson: Gson,
+        onAvengersFirstPageFetched: (List<Search>) -> Unit
+    ): Flow<PagingData<Search>>
+
     fun getMoviesDetails(key: String): Flow<NetworkResult<MovieDetails?>>
 }
 
-class JarRepositoryImpl @Inject constructor(val apiInterface: MoviesApiInterface) : JarRepository {
+class JarRepositoryImpl @Inject constructor(private val apiInterface: MoviesApiInterface) : JarRepository {
     override fun fetchResults(): Flow<List<ComputerItem>> {
         TODO("Not yet implemented")
     }
 
-    override fun getMoviesListing(query: String) = Pager(
-        config = PagingConfig(10, maxSize = 100, enablePlaceholders = true),
-        pagingSourceFactory = { PagingSourceMovies(apiInterface, searchKey = query) }).flow
+    override fun getMoviesListing(
+        query: String,
+        sharedPreferences: SharedPreferences,
+        gson: Gson,
+        onAvengersFirstPageFetched: (List<Search>) -> Unit
+    ) = Pager(
+        config = PagingConfig(pageSize = 10, maxSize = 100, enablePlaceholders = true),
+        pagingSourceFactory = {
+            PagingSourceMovies(
+                apiInterface = apiInterface,
+                searchKey = query,
+                sharedPreferences = sharedPreferences,
+                gson = gson,
+                onAvengersFirstPageFetched = onAvengersFirstPageFetched
+            )
+        }
+    ).flow
 
     override fun getMoviesDetails(key: String): Flow<NetworkResult<MovieDetails?>> = flow {
         val url = "https://www.omdbapi.com/?apikey=7513b73b&t=$key"
@@ -35,7 +57,6 @@ class JarRepositoryImpl @Inject constructor(val apiInterface: MoviesApiInterface
             emit(NetworkResult.Success(response.body()))
         } else {
             emit(NetworkResult.Error(response.message().toString()))
-
         }
     }
 }

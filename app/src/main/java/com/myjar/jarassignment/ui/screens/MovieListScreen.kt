@@ -20,13 +20,15 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import com.myjar.jarassignment.data.model.Search
 import com.myjar.jarassignment.ui.composables.ScalableVerticalGrid
+import com.myjar.jarassignment.ui.vm.MainViewModel
 
 @Composable
 fun ItemListScreen(
     pagingItems: LazyPagingItems<Search>,
-    onNavigateToDetail: (String) -> Unit,
+    onNavigateToDetail: (String, Search) -> Unit,
     onSearch: (String) -> Unit,
-    initialSearch: String = "avengers"
+    initialSearch: String = "avengers",
+    viewModel: MainViewModel
 ) {
 
     var searchText by rememberSaveable { mutableStateOf(initialSearch) }
@@ -66,7 +68,7 @@ fun ItemListScreen(
 
             else -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    ScalableVerticalGrid(pagingItems, onNavigateToDetail)
+                    ScalableVerticalGrid(pagingItems, onNavigateToDetail, viewModel = viewModel)
                     if (loadState.append is LoadState.Loading) {
                         Box(
                             modifier = Modifier

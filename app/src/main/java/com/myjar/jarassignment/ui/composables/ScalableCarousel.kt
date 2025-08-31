@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.abs
 import androidx.paging.compose.LazyPagingItems
 import com.myjar.jarassignment.data.model.Search
+import com.myjar.jarassignment.ui.vm.MainViewModel
 import kotlin.let
 
 
@@ -38,7 +39,8 @@ import kotlin.let
 @Composable
 fun ScalableVerticalGrid(
     pagingItems: LazyPagingItems<Search>,
-    onNavigateToDetail: (String) -> Unit,
+    onNavigateToDetail: (String, Search) -> Unit,
+    viewModel: MainViewModel
 ) {
     val listState = rememberLazyGridState()
 
@@ -81,7 +83,7 @@ fun ScalableVerticalGrid(
                         scaleY = scale
                     }
             ) {
-                MovieCard(item,onClick = { onNavigateToDetail(item.Title) }, modifier = Modifier)
+                MovieCard(item,onClick = { onNavigateToDetail(item.Title,item) }, modifier = Modifier)
             }
         }
     }

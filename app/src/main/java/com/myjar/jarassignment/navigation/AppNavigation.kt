@@ -99,12 +99,15 @@ fun AppNavigation(
             ) {
                 ItemListScreen(
                     pagingItems,
-                    onNavigateToDetail = { title -> navController.navigate("item_detail/$title") },
+                    onNavigateToDetail = { title,movie -> navController.navigate("item_detail/$title")
+                                         viewModel.addFavoriteMovie(movie =movie )},
                     onSearch = { newQuery -> searchQuery = newQuery },
-                    initialSearch = searchQuery
+                    initialSearch = searchQuery,
+                    viewModel
                 )
             }
-            composable("item_detail/{title}",
+            composable(
+                "item_detail/{title}",
                 enterTransition = {
                     slideIntoContainer(
                         AnimatedContentTransitionScope.SlideDirection.Left,
@@ -137,7 +140,10 @@ fun AppNavigation(
                 ViewPagerScreen()
             }
             composable(Screen.Favorites.route) {
-                FavouriteScreen()
+                FavouriteScreen(
+                    viewModel = viewModel,
+                    onMovieClick = {}
+                )
             }
         }
     }

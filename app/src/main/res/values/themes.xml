@@ -2,4 +2,17 @@
 <resources>
 
     <style name="Theme.JarAssignment" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- Splash Screen Theme -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Set the splash screen background -->
+        <item name="windowSplashScreenBackground">@android:color/black</item>
+
+        <!-- Set the splash screen icon -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/outline_360_24</item>
+
+        <!-- Set the theme to be applied to the Activity after the splash screen -->
+        <item name="postSplashScreenTheme">@style/Theme.JarAssignment</item>
+    </style>
+
 </resources>

@@ -9,9 +9,31 @@ import androidx.compose.runtime.Composable
 
 // Placeholder for your actual navigation destinations
 sealed class Screen(val route: String, val label: String, val icon: @Composable () -> Unit) {
-    object Listing : Screen("item_list", "Listing", { Icon(Icons.Filled.Home, contentDescription = "Home") })
-    object ViewPagerScreen : Screen("search", "ViewPager", { Icon(Icons.Filled.Warning, contentDescription = "Search") }) // Added a placeholder Search screen
-    object Favorites : Screen("favorites", "Favorites", { Icon(Icons.Filled.Favorite, contentDescription = "Favorites") }) // Added a placeholder Favorites screen
+    object Listing : Screen(
+        "item_list",
+        "Listing",
+        {
+            Icon(Icons.Filled.Home, contentDescription = "Home") })
+
+    object ViewPagerScreen : Screen(
+        "search",
+        "ViewPager",
+        {
+            Icon(
+                Icons.Filled.Warning,
+                contentDescription = "Search"
+            )
+        }) // Added a placeholder Search screen
+
+    object Favorites : Screen(
+        "favorites",
+        "Favorites",
+        {
+            Icon(
+                Icons.Filled.Favorite,
+                contentDescription = "Favorites"
+            )
+        }) // Added a placeholder Favorites screen
 }
 
 val items = listOf(

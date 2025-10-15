@@ -23,7 +23,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.myjar.jarassignment.ui.screens.FavouriteScreen
-// import com.myjar.jarassignment.data.model.Search // Assuming this is not Search from material icons
 import com.myjar.jarassignment.ui.screens.ItemDetailScreen
 import com.myjar.jarassignment.ui.screens.ItemListScreen
 import com.myjar.jarassignment.ui.screens.ViewPagerScreen
@@ -51,6 +50,7 @@ fun AppNavigation(
                         icon = { screen.icon() },
                         label = { Text(screen.label) },
                         selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+//                        It checks whether the current screen in the navigation stack matches the route of this bottom bar item and marks it as selected if true.
                         onClick = {
                             navController.navigate(screen.route) {
                                 popUpTo(navController.graph.findStartDestination().id) {
@@ -99,8 +99,10 @@ fun AppNavigation(
             ) {
                 ItemListScreen(
                     pagingItems,
-                    onNavigateToDetail = { title,movie -> navController.navigate("item_detail/$title")
-                                         viewModel.addFavoriteMovie(movie =movie )},
+                    onNavigateToDetail = { title, movie ->
+                        navController.navigate("item_detail/$title")
+                        viewModel.addFavoriteMovie(movie = movie)
+                    },
                     onSearch = { newQuery -> searchQuery = newQuery },
                     initialSearch = searchQuery,
                     viewModel

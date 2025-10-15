@@ -83,7 +83,12 @@ fun ScalableVerticalGrid(
                         scaleY = scale
                     }
             ) {
-                MovieCard(item,onClick = { onNavigateToDetail(item.Title,item) }, modifier = Modifier)
+                MovieCard(
+                    item, onClick = { onNavigateToDetail(item.Title, item) }, modifier = Modifier,
+                    onBookmarkClick = {
+                        viewModel.addFavoriteMovie(movie = item)
+                    }
+                )
             }
         }
     }

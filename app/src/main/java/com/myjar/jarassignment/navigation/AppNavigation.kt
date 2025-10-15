@@ -23,8 +23,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.myjar.jarassignment.ui.screens.FavouriteScreen
-import com.myjar.jarassignment.ui.screens.ItemDetailScreen
-import com.myjar.jarassignment.ui.screens.ItemListScreen
+import com.myjar.jarassignment.ui.screens.MovieDetailScreen
+import com.myjar.jarassignment.ui.screens.MovieListScreen
 import com.myjar.jarassignment.ui.screens.ViewPagerScreen
 import com.myjar.jarassignment.ui.vm.MainViewModel
 
@@ -97,17 +97,18 @@ fun AppNavigation(
                     )
                 }
             ) {
-                ItemListScreen(
+                MovieListScreen(
                     pagingItems,
                     onNavigateToDetail = { title, movie ->
                         navController.navigate("item_detail/$title")
-                        viewModel.addFavoriteMovie(movie = movie)
                     },
                     onSearch = { newQuery -> searchQuery = newQuery },
                     initialSearch = searchQuery,
                     viewModel
                 )
             }
+
+
             composable(
                 "item_detail/{title}",
                 enterTransition = {
@@ -136,7 +137,7 @@ fun AppNavigation(
                 }
             ) { backStackEntry ->
                 val title = backStackEntry.arguments?.getString("title")
-                ItemDetailScreen(title = title)
+                MovieDetailScreen(title = title)
             }
             composable(Screen.ViewPagerScreen.route) {
                 ViewPagerScreen()

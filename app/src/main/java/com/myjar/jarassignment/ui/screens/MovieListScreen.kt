@@ -5,9 +5,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,7 +30,7 @@ import com.myjar.jarassignment.ui.composables.ScalableVerticalGrid
 import com.myjar.jarassignment.ui.vm.MainViewModel
 
 @Composable
-fun ItemListScreen(
+fun MovieListScreen(
     pagingItems: LazyPagingItems<Search>,
     onNavigateToDetail: (String, Search) -> Unit,
     onSearch: (String) -> Unit,
@@ -35,17 +42,52 @@ fun ItemListScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        TextField(
+        OutlinedTextField(
             value = searchText,
             onValueChange = { newValue ->
                 searchText = newValue
                 onSearch(newValue)
-            }, modifier = Modifier
+            },
+            modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
+                .padding(16.dp),
             singleLine = true,
             placeholder = {
-                Text("Search...")
+                Text(
+                    text = "Search movies...",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            trailingIcon = {
+                if (searchText.isNotEmpty()) {
+                    IconButton(
+                        onClick = {
+                            searchText = ""
+                            onSearch("")
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Clear search",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            },
+            shape = RoundedCornerShape(12.dp),
+            label = {
+                Text(
+                    text = "Search Movies",
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         )
 

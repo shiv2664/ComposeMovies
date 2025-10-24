@@ -35,7 +35,8 @@ fun MovieListScreen(
     onNavigateToDetail: (String, Search) -> Unit,
     onSearch: (String) -> Unit,
     initialSearch: String = "avengers",
-    viewModel: MainViewModel
+    viewModel: MainViewModel,
+    onScrollChange: (Boolean) -> Unit
 ) {
 
     var searchText by rememberSaveable { mutableStateOf(initialSearch) }
@@ -110,7 +111,7 @@ fun MovieListScreen(
 
             else -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    ScalableVerticalGrid(pagingItems, onNavigateToDetail, viewModel = viewModel)
+                    ScalableVerticalGrid(pagingItems, onNavigateToDetail, viewModel = viewModel,onScrollChange = onScrollChange)
                     if (loadState.append is LoadState.Loading) {
                         Box(
                             modifier = Modifier

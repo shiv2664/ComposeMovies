@@ -1,8 +1,15 @@
 package com.myjar.jarassignment.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOut
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -39,30 +46,43 @@ fun AppNavigation(
     val viewModel = hiltViewModel<MainViewModel>()
     val pagingItems = viewModel.getMoviesListing(searchKey = searchQuery).collectAsLazyPagingItems()
 
+    val showBottomBar = remember { mutableStateOf(true) }
+
     Scaffold(
         modifier = modifier,
         bottomBar = {
-            NavigationBar {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
-                items.forEach { screen ->
-                    NavigationBarItem(
-                        icon = { screen.icon() },
-                        label = { Text(screen.label) },
-                        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+            AnimatedVisibility(
+                visible = showBottomBar.value,
+                enter = slideInVertically(
+                    initialOffsetY = { it } // slide in from bottom
+                ),
+                exit = slideOutVertically(
+                    targetOffsetY = { it } // slide out to bottom
+                )
+            ) {
+                NavigationBar {
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentDestination = navBackStackEntry?.destination
+                    items.forEach { screen ->
+                        NavigationBarItem(
+                            icon = { screen.icon() },
+                            label = { Text(screen.label) },
+                            selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
 //                        It checks whether the current screen in the navigation stack matches the route of this bottom bar item and marks it as selected if true.
-                        onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+                            onClick = {
+                                navController.navigate(screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
+
         }
     ) { innerPadding ->
         NavHost(
@@ -104,7 +124,9 @@ fun AppNavigation(
                     },
                     onSearch = { newQuery -> searchQuery = newQuery },
                     initialSearch = searchQuery,
-                    viewModel
+                    viewModel, onScrollChange = { isScrollingUp ->
+                        showBottomBar.value = isScrollingUp
+                    }
                 )
             }
 

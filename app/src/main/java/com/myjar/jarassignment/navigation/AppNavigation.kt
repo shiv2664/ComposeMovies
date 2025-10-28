@@ -11,6 +11,8 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOut
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.runtime.*
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.compose.material3.NavigationBar
@@ -22,6 +24,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -65,7 +69,32 @@ fun AppNavigation(
                     val currentDestination = navBackStackEntry?.destination
                     items.forEach { screen ->
                         NavigationBarItem(
-                            icon = { screen.icon() },
+                            icon = {
+                                val badgeCount = when (screen.route) {
+                                    "favorites" -> viewModel.favoriteMovies.collectAsState().value.size
+//                                    "search" -> 10 // Example: 3 unread notifications
+                                    else -> 0
+                                }
+
+                                if (badgeCount > 0) {
+                                    BadgedBox(
+                                        badge = {
+                                            Badge {
+                                                Text(
+                                                    text = badgeCount.toString(),
+                                                    color = Color.Red,
+                                                    fontSize = 10.sp
+                                                )
+                                            }
+                                        }
+                                    ) {
+                                        screen.icon()
+                                    }
+                                } else {
+                                    screen.icon()
+                                }
+
+                                   },
                             label = { Text(screen.label) },
                             selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
 //                        It checks whether the current screen in the navigation stack matches the route of this bottom bar item and marks it as selected if true.

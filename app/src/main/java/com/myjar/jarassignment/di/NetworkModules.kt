@@ -1,4 +1,4 @@
-package com.myjar.jarassignment
+package com.myjar.jarassignment.di
 
 import android.content.Context
 import android.content.SharedPreferences

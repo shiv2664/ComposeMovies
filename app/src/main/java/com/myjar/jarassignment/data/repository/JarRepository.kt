@@ -27,15 +27,14 @@ interface JarRepository {
     fun fetchResults(): Flow<List<ComputerItem>>
     fun getMoviesListing(
         query: String = "",
-        gson: Gson,
         onAvengersFirstPageFetched: (List<Search>) -> Unit
     ): Flow<PagingData<Search>>
 
     fun getMoviesDetails(key: String): Flow<NetworkResult<MovieDetails?>>
 
     // Favorite movie functions
-    suspend fun addFavorite(movie: Search, gson: Gson)
-    suspend fun removeFavorite(movieId: String, gson: Gson)
-    fun getFavoriteMovies(gson: Gson): Flow<List<Search>>
-    fun isFavorite(movieId: String,gson: Gson): Flow<Boolean>
+    suspend fun addFavorite(movie: Search)
+    suspend fun removeFavorite(movieId: String)
+    fun getFavoriteMovies(): Flow<List<Search>>
+    fun isFavorite(movieId: String): Flow<Boolean>
 }

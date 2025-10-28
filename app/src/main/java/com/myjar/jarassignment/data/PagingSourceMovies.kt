@@ -5,35 +5,31 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.myjar.jarassignment.SharedPrefs
 import com.myjar.jarassignment.data.model.Search
 import com.myjar.jarassignment.data.moviesapi.MoviesApiInterface
+import javax.inject.Inject
 
-class PagingSourceMovies(
+class PagingSourceMovies @Inject constructor(
     private val apiInterface: MoviesApiInterface,
     private val searchKey: String,
-    private val sharedPreferences: SharedPreferences, // Added
-    private val gson: Gson, // Added
+    private val sharedPrefs: SharedPrefs, // Added
     private val onAvengersFirstPageFetched: (List<Search>) -> Unit // Added
 ) : PagingSource<Int, Search>() {
 
     private var prevSearchKey = ""
     private val defaultIndex: Int = 1
     private val avengersQuery = "avengers"
-    private val avengersCacheKey = "avengers_top_10_cache"
 
-    private fun getAvengersCacheFromSp(): List<Search>? {
-        val json = sharedPreferences.getString(avengersCacheKey, null)
-        return if (json != null) {
-            try {
-                val type = object : TypeToken<List<Search>>() {}.type
-                gson.fromJson(json, type)
-            } catch (e: Exception) {
-                // Log error or handle corrupted cache
-                null
-            }
-        } else {
-            null
-        }
+
+/*
+    private fun getAvengersCacheFromSp(): List<Search?>? {
+        return listOf(sharedPrefs.getObject(SharedPrefs.AVENGERS_CACHE_KEY, Search::class.java))
+    }
+*/
+
+    private fun getAvengersCacheFromSp(): List<Search> {
+        return sharedPrefs.getList(SharedPrefs.AVENGERS_CACHE_KEY, Search::class.java)
     }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Search> {
@@ -47,8 +43,8 @@ class PagingSourceMovies(
 
         // Try to load from cache if it's the first page for "avengers"
         if (position == defaultIndex && searchKey.equals(avengersQuery, ignoreCase = true)) {
-            val cachedItems = getAvengersCacheFromSp()
-            if (!cachedItems.isNullOrEmpty()) {
+            val cachedItems = getAvengersCacheFromSp()?:emptyList()
+            if (cachedItems.isNotEmpty()) {
                 return LoadResult.Page(
                     data = cachedItems,
                     prevKey = null,

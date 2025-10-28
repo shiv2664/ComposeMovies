@@ -114,8 +114,7 @@ fun MovieListScreen(
                     ScalableVerticalGrid(pagingItems, onNavigateToDetail, viewModel = viewModel,onScrollChange = onScrollChange)
                     if (loadState.append is LoadState.Loading) {
                         Box(
-                            modifier = Modifier
-                                .fillMaxSize(),
+                            modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
                             CircularProgressIndicator()

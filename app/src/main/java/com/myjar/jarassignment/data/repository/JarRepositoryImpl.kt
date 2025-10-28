@@ -7,6 +7,7 @@ import androidx.paging.PagingConfig
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.myjar.jarassignment.NetworkResult
+import com.myjar.jarassignment.SharedPrefs
 import com.myjar.jarassignment.data.PagingSourceMovies
 import com.myjar.jarassignment.data.model.ComputerItem
 import com.myjar.jarassignment.data.model.MovieDetails
@@ -24,10 +25,8 @@ import javax.inject.Inject
 
 class JarRepositoryImpl @Inject constructor(
     private val apiInterface: MoviesApiInterface,
-    private val sharedPreferences: SharedPreferences
+    private val sharedPrefs: SharedPrefs
 ) : JarRepository {
-
-    private val favoritesKey = "favorite_movies_list" // Key for storing favorites in SharedPreferences
 
     override fun fetchResults(): Flow<List<ComputerItem>> {
         TODO("Not yet implemented")
@@ -35,7 +34,6 @@ class JarRepositoryImpl @Inject constructor(
 
     override fun getMoviesListing(
         query: String,
-        gson: Gson,
         onAvengersFirstPageFetched: (List<Search>) -> Unit
     ) = Pager(
         config = PagingConfig(pageSize = 10, maxSize = 100, enablePlaceholders = true),
@@ -43,8 +41,7 @@ class JarRepositoryImpl @Inject constructor(
             PagingSourceMovies(
                 apiInterface = apiInterface,
                 searchKey = query,
-                sharedPreferences = sharedPreferences,
-                gson = gson,
+                sharedPrefs = sharedPrefs,
                 onAvengersFirstPageFetched = onAvengersFirstPageFetched
             )
         }
@@ -61,89 +58,41 @@ class JarRepositoryImpl @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    private suspend fun getFavoritesListFromSp(gson: Gson): MutableList<Search> {
+    private suspend fun getFavoritesListFromSp(): MutableList<Search?> {
         return withContext(Dispatchers.IO) {
-            val json = sharedPreferences.getString(favoritesKey, null)
-            if (json != null) {
-                try {
-                    val type = object : TypeToken<MutableList<Search>>() {}.type
-                    gson.fromJson<MutableList<Search>>(json, type) ?: mutableListOf()
-                } catch (e: Exception) {
-                    // Log error or handle corrupted cache
-                    mutableListOf()
-                }
-            } else {
-                mutableListOf()
-            }
+
+//            val search=sharedPrefs.getObject(SharedPrefs.FAVOURITES, Search::class.java)
+            sharedPrefs.getList(SharedPrefs.FAVOURITES, Search::class.java).toMutableList()
+
         }
     }
 
-    private suspend fun saveFavoritesListToSp(favorites: List<Search>, gson: Gson) {
+    private suspend fun saveFavoritesListToSp(favorites: List<Search?>) {
         withContext(Dispatchers.IO) {
-            val json = gson.toJson(favorites)
-            sharedPreferences.edit { putString(favoritesKey, json) }
+            sharedPrefs.putList(SharedPrefs.FAVOURITES, favorites)
         }
     }
 
-    override suspend fun addFavorite(movie: Search,gson: Gson) {
-        val favorites = getFavoritesListFromSp( gson)
-        if (favorites.none { it.imdbID == movie.imdbID }) {
+    override suspend fun addFavorite(movie: Search) {
+        val favorites = getFavoritesListFromSp()
+        if (favorites.none { it?.imdbID == movie.imdbID }) {
             favorites.add(movie)
-            saveFavoritesListToSp(favorites, gson)
-        }else{
-            removeFavorite(movie.imdbID,gson)
+            saveFavoritesListToSp(favorites)
+        } else {
+            removeFavorite(movie.imdbID)
         }
     }
 
-    override suspend fun removeFavorite(movieId: String, gson: Gson) {
-        val favorites = getFavoritesListFromSp( gson)
-        val updatedFavorites = favorites.filterNot { it.imdbID == movieId }
-        saveFavoritesListToSp(updatedFavorites, gson)
+    override suspend fun removeFavorite(movieId: String) {
+        val favorites = getFavoritesListFromSp()
+        val updatedFavorites = favorites.filterNot { it?.imdbID == movieId }
+        saveFavoritesListToSp(updatedFavorites)
     }
 
-    override fun getFavoriteMovies(gson: Gson): Flow<List<Search>> = callbackFlow {
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, key ->
-            if (key == favoritesKey) {
-                val json = sp.getString(favoritesKey, null)
-                val newFavorites: List<Search> = if (json != null) {
-                    try {
-                        val type = object : TypeToken<List<Search>>() {}.type
-                        gson.fromJson<List<Search>>(json, type) ?: emptyList()
-                    } catch (e: Exception) {
-                        emptyList()
-                    }
-                } else {
-                    emptyList()
-                }
-                trySend(newFavorites).isSuccess // Check if send was successful
-            }
-        }
-        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
-        // Emit initial value using send (suspend function)
-        launch { // Launch coroutine for suspend function call
-            send(getFavoritesListFromSp(gson))
-        }
-        awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
-    }.flowOn(Dispatchers.IO)
+    override fun getFavoriteMovies(): Flow<List<Search>> =
+        sharedPrefs.getListFlow(SharedPrefs.FAVOURITES, Search::class.java)
 
-    override fun isFavorite(movieId: String, gson: Gson): Flow<Boolean> = callbackFlow {
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, key ->
-            if (key == favoritesKey) {
-                // Launch a coroutine to call suspend function getFavoritesListFromSp
-                // and then process its result to send to the flow.
-                launch {
-                    val currentFavorites = getFavoritesListFromSp(gson)
-                    trySend(currentFavorites.any { it.imdbID == movieId }).isSuccess
-                }
-            }
-        }
-        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
-        // Emit initial value
-        // Similarly, launch a coroutine for the suspend call for the initial value
-        launch {
-            val initialFavorites = getFavoritesListFromSp( gson)
-            send(initialFavorites.any { it.imdbID == movieId })
-        }
-        awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
-    }.flowOn(Dispatchers.IO)
+
+    override fun isFavorite(movieId: String): Flow<Boolean> = sharedPrefs.isFavorite(movieId)
+
 }

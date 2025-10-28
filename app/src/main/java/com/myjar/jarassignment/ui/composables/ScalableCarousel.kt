@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -85,6 +86,8 @@ fun ScalableVerticalGrid(
             // Alpha: 0.6f → 1f
             val alpha = 0.6f + (0.4f * (1f - (distance / viewportCenter).coerceIn(0f, 1f)))
 
+            val isFavorite by viewModel.isFavorite(item.imdbID).collectAsState(initial = false)
+
             Box(
                 modifier = Modifier
                     .padding(8.dp) // reserve space
@@ -95,10 +98,13 @@ fun ScalableVerticalGrid(
                     }
             ) {
                 MovieCard(
-                    item, onClick = { onNavigateToDetail(item.Title, item) }, modifier = Modifier,
+                    item,
+                    onClick = { onNavigateToDetail(item.Title, item) },
+                    modifier = Modifier,
                     onBookmarkClick = {
                         viewModel.addFavoriteMovie(movie = item)
-                    }
+                    },
+                    isFavorite
                 )
             }
         }

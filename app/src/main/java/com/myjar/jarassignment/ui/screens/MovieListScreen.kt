@@ -1,5 +1,8 @@
 package com.myjar.jarassignment.ui.screens
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,26 +25,30 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import com.myjar.jarassignment.data.model.Search
 import com.myjar.jarassignment.ui.composables.ScalableVerticalGrid
 import com.myjar.jarassignment.ui.vm.MainViewModel
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun MovieListScreen(
+fun SharedTransitionScope.MovieListScreen(
     pagingItems: LazyPagingItems<Search>,
     onNavigateToDetail: (String, Search) -> Unit,
     onSearch: (String) -> Unit,
     initialSearch: String = "avengers",
     viewModel: MainViewModel,
-    onScrollChange: (Boolean) -> Unit
+    onScrollChange: (Boolean) -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
 
     var searchText by rememberSaveable { mutableStateOf(initialSearch) }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().clipToBounds()) {
 
         OutlinedTextField(
             value = searchText,
@@ -51,7 +58,8 @@ fun MovieListScreen(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(16.dp)
+                .zIndex(1f),
             singleLine = true,
             placeholder = {
                 Text(
@@ -111,10 +119,10 @@ fun MovieListScreen(
 
             else -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    ScalableVerticalGrid(pagingItems, onNavigateToDetail, viewModel = viewModel,onScrollChange = onScrollChange)
+                    ScalableVerticalGrid(pagingItems, onNavigateToDetail, viewModel = viewModel,onScrollChange = onScrollChange, animatedVisibilityScope = animatedVisibilityScope)
                     if (loadState.append is LoadState.Loading) {
                         Box(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier.fillMaxSize().zIndex(0f),
                             contentAlignment = Alignment.Center
                         ) {
                             CircularProgressIndicator()

@@ -1,5 +1,8 @@
 package com.myjar.jarassignment.ui.composables
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -49,13 +52,15 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.myjar.jarassignment.data.model.Search
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun MovieCard(
+fun SharedTransitionScope.MovieCard(
     item: Search?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     onBookmarkClick: () -> Unit,
-    isBookmarked: Boolean = false
+    isBookmarked: Boolean = false,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val context = LocalContext.current
     val posterUrl = item?.Poster
@@ -99,7 +104,10 @@ fun MovieCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(400.dp)
-                            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
+                            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                            .sharedElement(
+                                rememberSharedContentState(key = "posterImage/${item?.imdbID}"),
+                                animatedVisibilityScope = animatedVisibilityScope),
                         contentScale = ContentScale.Crop
                     )
 
@@ -235,7 +243,7 @@ fun MovieCard(
     }
 }
 
-@Preview
+/*@Preview
 @Composable
 fun MovieCardPreview() {
     val item = Search(
@@ -262,4 +270,4 @@ fun MovieCardPreview() {
 //            isBookmarked = true
 //        )
     }
-}
+}*/

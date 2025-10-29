@@ -3,6 +3,8 @@ package com.myjar.jarassignment.navigation
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -40,9 +42,10 @@ import com.myjar.jarassignment.ui.screens.ViewPagerScreen
 import com.myjar.jarassignment.ui.vm.MainViewModel
 
 
-@OptIn(ExperimentalAnimationApi::class)
+
+@OptIn(ExperimentalAnimationApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun AppNavigation(
+fun SharedTransitionScope.AppNavigation(
     modifier: Modifier = Modifier,
 ) {
     val navController = rememberNavController()
@@ -52,153 +55,156 @@ fun AppNavigation(
 
     val showBottomBar = remember { mutableStateOf(true) }
 
-    Scaffold(
-        modifier = modifier,
-        bottomBar = {
-            AnimatedVisibility(
-                visible = showBottomBar.value,
-                enter = slideInVertically(
-                    initialOffsetY = { it } // slide in from bottom
-                ),
-                exit = slideOutVertically(
-                    targetOffsetY = { it } // slide out to bottom
-                )
-            ) {
-                NavigationBar {
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentDestination = navBackStackEntry?.destination
-                    items.forEach { screen ->
-                        NavigationBarItem(
-                            icon = {
-                                val badgeCount = when (screen.route) {
-                                    "favorites" -> viewModel.favoriteMovies.collectAsState().value.size
+        Scaffold(
+            modifier = modifier,
+            bottomBar =
+                /*AnimatedVisibility(
+                    visible = showBottomBar.value,
+                    enter = slideInVertically(
+                        initialOffsetY = { it } // slide in from bottom
+                    ),
+                    exit = slideOutVertically(
+                        targetOffsetY = { it } // slide out to bottom
+                    )
+                ) */
+                {
+                    NavigationBar {
+                        val navBackStackEntry by navController.currentBackStackEntryAsState()
+                        val currentDestination = navBackStackEntry?.destination
+                        items.forEach { screen ->
+                            NavigationBarItem(
+                                icon = {
+                                    val badgeCount = when (screen.route) {
+                                        "favorites" -> viewModel.favoriteMovies.collectAsState().value.size
 //                                    "search" -> 10 // Example: 3 unread notifications
-                                    else -> 0
-                                }
+                                        else -> 0
+                                    }
 
-                                if (badgeCount > 0) {
-                                    BadgedBox(
-                                        badge = {
-                                            Badge {
-                                                Text(
-                                                    text = badgeCount.toString(),
-                                                    color = Color.Red,
-                                                    fontSize = 10.sp
-                                                )
+                                    if (badgeCount > 0) {
+                                        BadgedBox(
+                                            badge = {
+                                                Badge {
+                                                    Text(
+                                                        text = badgeCount.toString(),
+                                                        color = Color.Red,
+                                                        fontSize = 10.sp
+                                                    )
+                                                }
                                             }
+                                        ) {
+                                            screen.icon()
                                         }
-                                    ) {
+                                    } else {
                                         screen.icon()
                                     }
-                                } else {
-                                    screen.icon()
-                                }
 
-                                   },
-                            label = { Text(screen.label) },
-                            selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                                },
+                                label = { Text(screen.label) },
+                                selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
 //                        It checks whether the current screen in the navigation stack matches the route of this bottom bar item and marks it as selected if true.
-                            onClick = {
-                                navController.navigate(screen.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
+                                onClick = {
+                                    navController.navigate(screen.route) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
                                     }
-                                    launchSingleTop = true
-                                    restoreState = true
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
-            }
 
-        }
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Listing.route,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(
-                Screen.Listing.route,
-                enterTransition = {
-                    slideIntoContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Left,
-                        animationSpec = tween(700)
-                    )
-                },
-                exitTransition = {
-                    slideOutOfContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Left,
-                        animationSpec = tween(700)
-                    )
-                },
-                popEnterTransition = {
-                    slideIntoContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Right,
-                        animationSpec = tween(700)
-                    )
-                },
-                popExitTransition = {
-                    slideOutOfContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Right,
-                        animationSpec = tween(700)
-                    )
-                }
+        ) { innerPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Listing.route,
+                modifier = Modifier.padding(innerPadding)
             ) {
-                MovieListScreen(
-                    pagingItems,
-                    onNavigateToDetail = { title, movie ->
-                        navController.navigate("item_detail/$title")
+                composable(
+                    Screen.Listing.route,
+                    /*enterTransition = {
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(700)
+                        )
                     },
-                    onSearch = { newQuery -> searchQuery = newQuery },
-                    initialSearch = searchQuery,
-                    viewModel, onScrollChange = { isScrollingUp ->
-                        showBottomBar.value = isScrollingUp
-                    }
+                    exitTransition = {
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(700)
+                        )
+                    },
+                    popEnterTransition = {
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(700)
+                        )
+                    },
+                    popExitTransition = {
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(700)
+                        )
+                    }*/
                 )
-            }
-
-
-            composable(
-                "item_detail/{title}",
-                enterTransition = {
-                    slideIntoContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Left,
-                        animationSpec = tween(700)
-                    )
-                },
-                exitTransition = {
-                    slideOutOfContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Left,
-                        animationSpec = tween(700)
-                    )
-                },
-                popEnterTransition = {
-                    slideIntoContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Right,
-                        animationSpec = tween(700)
-                    )
-                },
-                popExitTransition = {
-                    slideOutOfContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Right,
-                        animationSpec = tween(700)
+                {
+                    MovieListScreen(
+                        pagingItems,
+                        onNavigateToDetail = { title, movie ->
+                            navController.navigate("item_detail/$title")
+                        },
+                        onSearch = { newQuery -> searchQuery = newQuery },
+                        initialSearch = searchQuery,
+                        viewModel,
+                        onScrollChange = { isScrollingUp ->
+                            showBottomBar.value = isScrollingUp
+                        }, animatedVisibilityScope = this
                     )
                 }
-            ) { backStackEntry ->
-                val title = backStackEntry.arguments?.getString("title")
-                MovieDetailScreen(title = title)
-            }
-            composable(Screen.ViewPagerScreen.route) {
-                ViewPagerScreen()
-            }
-            composable(Screen.Favorites.route) {
-                FavouriteScreen(
-                    viewModel = viewModel,
-                    onMovieClick = {}
-                )
+
+                composable(
+                    "item_detail/{title}",
+                    /*enterTransition = {
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(700)
+                        )
+                    },
+                    exitTransition = {
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(700)
+                        )
+                    },
+                    popEnterTransition = {
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(700)
+                        )
+                    },
+                    popExitTransition = {
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(700)
+                        )
+                    }*/
+                ) { backStackEntry ->
+                    val title = backStackEntry.arguments?.getString("title")
+                    MovieDetailScreen(title = title, animatedVisibilityScope = this)
+                }
+                composable(Screen.ViewPagerScreen.route) {
+                    ViewPagerScreen()
+                }
+                composable(Screen.Favorites.route) {
+                    FavouriteScreen(
+                        viewModel = viewModel,
+                        onMovieClick = {}
+                    )
+                }
             }
         }
-    }
+
+
 }

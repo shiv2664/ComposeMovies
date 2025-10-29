@@ -1,5 +1,8 @@
 package com.myjar.jarassignment.ui.composables
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,13 +32,14 @@ import com.myjar.jarassignment.ui.vm.MainViewModel
 import kotlin.let
 
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun ScalableVerticalGrid(
+fun SharedTransitionScope.ScalableVerticalGrid(
     pagingItems: LazyPagingItems<Search>,
     onNavigateToDetail: (String, Search) -> Unit,
     viewModel: MainViewModel,
-    onScrollChange: (Boolean) -> Unit
+    onScrollChange: (Boolean) -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val listState = rememberLazyGridState()
 
@@ -104,7 +108,7 @@ fun ScalableVerticalGrid(
                     onBookmarkClick = {
                         viewModel.addFavoriteMovie(movie = item)
                     },
-                    isFavorite
+                    isFavorite,animatedVisibilityScope
                 )
             }
         }

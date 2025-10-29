@@ -1,5 +1,8 @@
 package com.myjar.jarassignment.ui.screens
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -19,20 +22,24 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import coil.transition.CrossfadeTransition
 import com.myjar.jarassignment.NetworkResult
 import com.myjar.jarassignment.data.model.MovieDetails
 import com.myjar.jarassignment.ui.vm.DetailsViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun MovieDetailScreen(
+fun SharedTransitionScope.MovieDetailScreen(
     title: String?,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val viewModel: DetailsViewModel = hiltViewModel()
     val detailState by viewModel.details.collectAsState()
@@ -43,52 +50,58 @@ fun MovieDetailScreen(
         }
     }
 
-/*     The scaffold provides the top bar and a consistent layout structure
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Details", color = Color.White) },
-                navigationIcon = {
-//                    IconButton(onClick = onBackPress) {
-//                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
-//                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent // Make TopAppBar transparent to see backdrop
+    /*     The scaffold provides the top bar and a consistent layout structure
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Details", color = Color.White) },
+                    navigationIcon = {
+    //                    IconButton(onClick = onBackPress) {
+    //                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+    //                    }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent // Make TopAppBar transparent to see backdrop
+                    )
                 )
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { paddingValues ->
-         Main content area that respects the scaffold's padding*/
-        Box(modifier = Modifier) {
-            when (val state = detailState) {
-                is NetworkResult.Loading -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
+            },
+            containerColor = MaterialTheme.colorScheme.background
+        ) { paddingValues ->
+             Main content area that respects the scaffold's padding*/
+    Box(modifier = Modifier) {
+        when (val state = detailState) {
+            is NetworkResult.Loading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
-                is NetworkResult.Success -> {
-                    state.data?.let {
-                        movie -> MovieDetailsContent(movie = movie)
-                    } ?: run {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text("Movie details not found.")
-                        }
-                    }
-                }
-                is NetworkResult.Error -> {
+            }
+
+            is NetworkResult.Success -> {
+                state.data?.let { movie ->
+                    MovieDetailsContent(movie = movie, animatedVisibilityScope)
+                } ?: run {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Error: ${state.message ?: "Unknown error"}")
+                        Text("Movie details not found.")
                     }
                 }
             }
+
+            is NetworkResult.Error -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Error: ${state.message ?: "Unknown error"}")
+                }
+            }
         }
+    }
 //    }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun MovieDetailsContent(movie: MovieDetails) {
+fun SharedTransitionScope.MovieDetailsContent(
+    movie: MovieDetails,
+    animatedVisibilityScope: AnimatedVisibilityScope
+) {
     val scrollState = rememberScrollState()
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -116,7 +129,11 @@ fun MovieDetailsContent(movie: MovieDetails) {
                     modifier = Modifier
                         .fillMaxSize()
                         .fillMaxHeight(0.5f)
-                        .blur(5.dp), // apply blur
+                        .blur(5.dp)
+                        .sharedElement(
+                            rememberSharedContentState(key = "posterImage/${movie.imdbID}"),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        ),
                     contentScale = ContentScale.Crop
                 )
 
@@ -127,28 +144,27 @@ fun MovieDetailsContent(movie: MovieDetails) {
                 )
 
                 // Foreground content (sharp)
-/*                Column(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = movie.Title ?: "Unknown Title",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
+                /*                Column(
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .padding(16.dp)
+                                ) {
+                                    Text(
+                                        text = movie.Title ?: "Unknown Title",
+                                        style = MaterialTheme.typography.titleLarge,
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold
+                                    )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                                    Spacer(modifier = Modifier.height(8.dp))
 
-                    Text(
-                        text = movie.Year ?: "",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White
-                    )
-                }*/
+                                    Text(
+                                        text = movie.Year ?: "",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.White
+                                    )
+                                }*/
             }
-
 
 
             // Gradient to make content on top more readable
@@ -185,7 +201,10 @@ fun MovieDetailsContent(movie: MovieDetails) {
                 verticalAlignment = Alignment.Bottom
             ) {
                 AsyncImage(
-                    model = movie.Poster,
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(movie.Poster)
+                        .crossfade(true)  // Enable crossfade here
+                        .build(),
                     contentDescription = "Movie Poster",
                     modifier = Modifier
                         .width(140.dp)
@@ -196,8 +215,7 @@ fun MovieDetailsContent(movie: MovieDetails) {
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = movie.Title,
+                    Text(text = movie.Title?:"",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground
@@ -226,7 +244,7 @@ fun MovieDetailsContent(movie: MovieDetails) {
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = movie.imdbRating,
+                    text = movie.imdbRating?:"",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
@@ -242,7 +260,7 @@ fun MovieDetailsContent(movie: MovieDetails) {
             // Plot Summary section
             DetailSection(title = "Plot Summary") {
                 Text(
-                    text = movie.Plot,
+                    text = movie.Plot?:"",
                     style = MaterialTheme.typography.bodyLarge,
                     lineHeight = 24.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -251,11 +269,11 @@ fun MovieDetailsContent(movie: MovieDetails) {
 
             // Cast & Crew section
             DetailSection(title = "Cast & Crew") {
-                InfoRow("Director", movie.Director)
+                InfoRow("Director", movie.Director?:"")
                 Spacer(modifier = Modifier.height(8.dp))
-                InfoRow("Writer", movie.Writer)
+                InfoRow("Writer", movie.Writer?:"")
                 Spacer(modifier = Modifier.height(8.dp))
-                InfoRow("Actors", movie.Actors)
+                InfoRow("Actors", movie.Actors?:"")
             }
         }
     }
@@ -291,7 +309,7 @@ fun MovieDetailsContentPreview() {
         imdbRating = "8.0",
         imdbVotes = "100,000"
     )
-    MovieDetailsContent(movie = movie)
+//    MovieDetailsContent(movie = movie,)
 }
 
 @Composable

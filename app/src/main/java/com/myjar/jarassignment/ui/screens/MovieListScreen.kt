@@ -36,14 +36,13 @@ import com.myjar.jarassignment.ui.vm.MainViewModel
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun SharedTransitionScope.MovieListScreen(
+fun MovieListScreen(
     pagingItems: LazyPagingItems<Search>,
     onNavigateToDetail: (String, Search) -> Unit,
     onSearch: (String) -> Unit,
     initialSearch: String = "avengers",
     viewModel: MainViewModel,
     onScrollChange: (Boolean) -> Unit,
-    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
 
     var searchText by rememberSaveable { mutableStateOf(initialSearch) }
@@ -119,7 +118,7 @@ fun SharedTransitionScope.MovieListScreen(
 
             else -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    ScalableVerticalGrid(pagingItems, onNavigateToDetail, viewModel = viewModel,onScrollChange = onScrollChange, animatedVisibilityScope = animatedVisibilityScope)
+                    ScalableVerticalGrid(pagingItems, onNavigateToDetail, viewModel = viewModel,onScrollChange = onScrollChange)
                     if (loadState.append is LoadState.Loading) {
                         Box(
                             modifier = Modifier.fillMaxSize().zIndex(0f),

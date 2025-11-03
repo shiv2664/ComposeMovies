@@ -54,13 +54,12 @@ import com.myjar.jarassignment.data.model.Search
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun SharedTransitionScope.MovieCard(
+fun MovieCard(
     item: Search?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     onBookmarkClick: () -> Unit,
-    isBookmarked: Boolean = false,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    isBookmarked: Boolean = false
 ) {
     val context = LocalContext.current
     val posterUrl = item?.Poster
@@ -104,10 +103,7 @@ fun SharedTransitionScope.MovieCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(400.dp)
-                            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                            .sharedElement(
-                                rememberSharedContentState(key = "posterImage/${item?.imdbID}"),
-                                animatedVisibilityScope = animatedVisibilityScope),
+                            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
                         contentScale = ContentScale.Crop
                     )
 

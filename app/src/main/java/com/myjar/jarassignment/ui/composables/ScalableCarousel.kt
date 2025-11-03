@@ -32,14 +32,12 @@ import com.myjar.jarassignment.ui.vm.MainViewModel
 import kotlin.let
 
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun SharedTransitionScope.ScalableVerticalGrid(
+fun ScalableVerticalGrid(
     pagingItems: LazyPagingItems<Search>,
     onNavigateToDetail: (String, Search) -> Unit,
     viewModel: MainViewModel,
     onScrollChange: (Boolean) -> Unit,
-    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val listState = rememberLazyGridState()
 
@@ -108,7 +106,7 @@ fun SharedTransitionScope.ScalableVerticalGrid(
                     onBookmarkClick = {
                         viewModel.addFavoriteMovie(movie = item)
                     },
-                    isFavorite,animatedVisibilityScope
+                    isFavorite
                 )
             }
         }

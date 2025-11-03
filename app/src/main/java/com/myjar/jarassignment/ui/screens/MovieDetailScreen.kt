@@ -1,14 +1,13 @@
 package com.myjar.jarassignment.ui.screens
 
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -24,22 +23,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import coil.transition.CrossfadeTransition
 import com.myjar.jarassignment.NetworkResult
 import com.myjar.jarassignment.data.model.MovieDetails
 import com.myjar.jarassignment.ui.vm.DetailsViewModel
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SharedTransitionScope.MovieDetailScreen(
+fun MovieDetailScreen(
     title: String?,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    navController: NavHostController
 ) {
     val viewModel: DetailsViewModel = hiltViewModel()
     val detailState by viewModel.details.collectAsState()
@@ -50,57 +50,69 @@ fun SharedTransitionScope.MovieDetailScreen(
         }
     }
 
-    /*     The scaffold provides the top bar and a consistent layout structure
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("Details", color = Color.White) },
-                    navigationIcon = {
-    //                    IconButton(onClick = onBackPress) {
-    //                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
-    //                    }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Transparent // Make TopAppBar transparent to see backdrop
-                    )
+    Column(modifier = Modifier.fillMaxSize()) {
+        TopAppBar(
+            title = {
+                Text(
+                    text = title ?: "Movie Details",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             },
-            containerColor = MaterialTheme.colorScheme.background
-        ) { paddingValues ->
-             Main content area that respects the scaffold's padding*/
-    Box(modifier = Modifier) {
-        when (val state = detailState) {
-            is NetworkResult.Loading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+            navigationIcon = {
+                IconButton(onClick = {
+                    navController.popBackStack() // 👈 Goes back to previous screen
+                }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White
+                    )
                 }
-            }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color(0xFF6650a4),
+                titleContentColor = Color.White
+            ),
+            windowInsets = WindowInsets(0, 0, 0, 0)
+        )
 
-            is NetworkResult.Success -> {
-                state.data?.let { movie ->
-                    MovieDetailsContent(movie = movie, animatedVisibilityScope)
-                } ?: run {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(0.dp,1.dp,0.dp,1.dp)
+        ) {
+            when (val state = detailState) {
+                is NetworkResult.Loading -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Movie details not found.")
+                        CircularProgressIndicator()
                     }
                 }
-            }
 
-            is NetworkResult.Error -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Error: ${state.message ?: "Unknown error"}")
+                is NetworkResult.Success -> {
+                    state.data?.let { movie ->
+                        MovieDetailsContent(movie = movie)
+                    } ?: run {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("Movie details not found.")
+                        }
+                    }
+                }
+
+                is NetworkResult.Error -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Error: ${state.message ?: "Unknown error"}")
+                    }
                 }
             }
         }
     }
-//    }
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun SharedTransitionScope.MovieDetailsContent(
-    movie: MovieDetails,
-    animatedVisibilityScope: AnimatedVisibilityScope
+fun MovieDetailsContent(
+    movie: MovieDetails
 ) {
     val scrollState = rememberScrollState()
 
@@ -129,11 +141,7 @@ fun SharedTransitionScope.MovieDetailsContent(
                     modifier = Modifier
                         .fillMaxSize()
                         .fillMaxHeight(0.5f)
-                        .blur(5.dp)
-                        .sharedElement(
-                            rememberSharedContentState(key = "posterImage/${movie.imdbID}"),
-                            animatedVisibilityScope = animatedVisibilityScope
-                        ),
+                        .blur(5.dp),
                     contentScale = ContentScale.Crop
                 )
 
@@ -188,7 +196,7 @@ fun SharedTransitionScope.MovieDetailsContent(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(bottom = 32.dp) // Padding at the bottom
+                .padding(horizontal = 16.dp, vertical = 32.dp) // Padding at the bottom
         ) {
             // Spacer to push content below the semi-transparent part of the backdrop
             Spacer(modifier = Modifier.height(180.dp))
@@ -309,7 +317,7 @@ fun MovieDetailsContentPreview() {
         imdbRating = "8.0",
         imdbVotes = "100,000"
     )
-//    MovieDetailsContent(movie = movie,)
+    MovieDetailsContent(movie = movie)
 }
 
 @Composable

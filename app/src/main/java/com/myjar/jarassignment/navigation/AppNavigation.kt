@@ -1,17 +1,9 @@
 package com.myjar.jarassignment.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideIn
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOut
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -45,7 +37,7 @@ import com.myjar.jarassignment.ui.vm.MainViewModel
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun SharedTransitionScope.AppNavigation(
+fun AppNavigation(
     modifier: Modifier = Modifier,
 ) {
     val navController = rememberNavController()
@@ -124,7 +116,7 @@ fun SharedTransitionScope.AppNavigation(
             ) {
                 composable(
                     Screen.Listing.route,
-                    /*enterTransition = {
+                    enterTransition = {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Left,
                             animationSpec = tween(700)
@@ -147,7 +139,7 @@ fun SharedTransitionScope.AppNavigation(
                             AnimatedContentTransitionScope.SlideDirection.Right,
                             animationSpec = tween(700)
                         )
-                    }*/
+                    }
                 )
                 {
                     MovieListScreen(
@@ -160,13 +152,13 @@ fun SharedTransitionScope.AppNavigation(
                         viewModel,
                         onScrollChange = { isScrollingUp ->
                             showBottomBar.value = isScrollingUp
-                        }, animatedVisibilityScope = this
+                        }
                     )
                 }
 
                 composable(
                     "item_detail/{title}",
-                    /*enterTransition = {
+                    enterTransition = {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Left,
                             animationSpec = tween(700)
@@ -189,10 +181,10 @@ fun SharedTransitionScope.AppNavigation(
                             AnimatedContentTransitionScope.SlideDirection.Right,
                             animationSpec = tween(700)
                         )
-                    }*/
+                    }
                 ) { backStackEntry ->
                     val title = backStackEntry.arguments?.getString("title")
-                    MovieDetailScreen(title = title, animatedVisibilityScope = this)
+                    MovieDetailScreen(title = title,navController)
                 }
                 composable(Screen.ViewPagerScreen.route) {
                     ViewPagerScreen()

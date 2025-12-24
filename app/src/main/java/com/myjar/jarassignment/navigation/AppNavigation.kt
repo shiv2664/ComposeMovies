@@ -46,7 +46,7 @@ fun AppNavigation(
             NavigationBar {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
-                items.forEach { screen ->
+                itemsDataList.forEach { screen ->
                     NavigationBarItem(
                         icon = { screen.icon() },
                         label = { Text(screen.label) },

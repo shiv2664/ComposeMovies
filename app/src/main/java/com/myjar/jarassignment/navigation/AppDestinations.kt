@@ -19,3 +19,9 @@ val items = listOf(
     Screen.ViewPagerScreen,
     Screen.Favorites,
 )
+
+data class DataScreens(val route:String, val label: String, val icon:@Composable () -> Unit)
+
+val itemsDataList: List<DataScreens> = listOf(DataScreens(route ="",label="",icon={ Icon(Icons.Filled.Home, contentDescription = "Home") }),
+    DataScreens("search", "ViewPager", { Icon(Icons.Filled.Warning, contentDescription = "Search") }),
+    DataScreens("favorites", "Favorites", { Icon(Icons.Filled.Favorite, contentDescription = "Favorites") }))

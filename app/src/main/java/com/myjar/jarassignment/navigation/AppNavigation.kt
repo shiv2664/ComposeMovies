@@ -65,79 +65,81 @@ fun AppNavigation(
             }
         }
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Listing.route,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(
-                Screen.Listing.route,
-                enterTransition = {
-                    slideIntoContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Left,
-                        animationSpec = tween(700)
-                    )
-                },
-                exitTransition = {
-                    slideOutOfContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Left,
-                        animationSpec = tween(700)
-                    )
-                },
-                popEnterTransition = {
-                    slideIntoContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Right,
-                        animationSpec = tween(700)
-                    )
-                },
-                popExitTransition = {
-                    slideOutOfContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Right,
-                        animationSpec = tween(700)
-                    )
-                }
+        itemsDataList.getOrNull(0)?.route?.let {
+            NavHost(
+                navController = navController,
+                startDestination = it,
+                modifier = Modifier.padding(innerPadding)
             ) {
-                ItemListScreen(
-                    pagingItems,
-                    onNavigateToDetail = { title -> navController.navigate("item_detail/$title") },
-                    onSearch = { newQuery -> searchQuery = newQuery },
-                    initialSearch = searchQuery
-                )
-            }
-            composable("item_detail/{title}",
-                enterTransition = {
-                    slideIntoContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Left,
-                        animationSpec = tween(700)
-                    )
-                },
-                exitTransition = {
-                    slideOutOfContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Left,
-                        animationSpec = tween(700)
-                    )
-                },
-                popEnterTransition = {
-                    slideIntoContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Right,
-                        animationSpec = tween(700)
-                    )
-                },
-                popExitTransition = {
-                    slideOutOfContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Right,
-                        animationSpec = tween(700)
+                composable(
+                    itemsDataList[0].route,
+                    enterTransition = {
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(700)
+                        )
+                    },
+                    exitTransition = {
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(700)
+                        )
+                    },
+                    popEnterTransition = {
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(700)
+                        )
+                    },
+                    popExitTransition = {
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(700)
+                        )
+                    }
+                ) {
+                    ItemListScreen(
+                        pagingItems,
+                        onNavigateToDetail = { title -> navController.navigate("item_detail/$title") },
+                        onSearch = { newQuery -> searchQuery = newQuery },
+                        initialSearch = searchQuery
                     )
                 }
-            ) { backStackEntry ->
-                val title = backStackEntry.arguments?.getString("title")
-                ItemDetailScreen(title = title)
-            }
-            composable(Screen.ViewPagerScreen.route) {
-                ViewPagerScreen()
-            }
-            composable(Screen.Favorites.route) {
-                FavouriteScreen()
+                composable("item_detail/{title}",
+                    enterTransition = {
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(700)
+                        )
+                    },
+                    exitTransition = {
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(700)
+                        )
+                    },
+                    popEnterTransition = {
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(700)
+                        )
+                    },
+                    popExitTransition = {
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(700)
+                        )
+                    }
+                ) { backStackEntry ->
+                    val title = backStackEntry.arguments?.getString("title")
+                    ItemDetailScreen(title = title)
+                }
+                composable(itemsDataList[1].route) {
+                    ViewPagerScreen()
+                }
+                composable(itemsDataList[2].route) {
+                    FavouriteScreen()
+                }
             }
         }
     }
